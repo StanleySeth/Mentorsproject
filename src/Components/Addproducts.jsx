@@ -79,11 +79,12 @@ function Addproducts() {
 
 
   return loading ? <Loader /> :  (
+    <>
     <div className='row justify-content-center mt-4'>
       <div className='col-md-6 card p-4 shadow' style={{ backgroundColor: 'lightgray' }}>
         <h3 className="text-info font-bold ">
-  Connect with a Mentor 🤝 
-</h3>
+              Connect with a Mentor 🤝 
+            </h3>
         {/* {Bind the loading hook} */}
         {loading && <Loader />}
         <h5 className='text-success'>{success}</h5>
@@ -147,8 +148,23 @@ function Addproducts() {
 
         </form>
       </div>
+      {/* ✅ FOOTER ADDED HERE */}
+    <footer className="bg-dark text-light mt-5 p-4 text-center">
+      <div className="container">
+        <h5>MentorConnect</h5>
+        <p>Empowering your growth through expert mentorship.</p>
 
+        <div className="d-flex justify-content-center gap-3 mb-3">
+          <a href="/" className="text-light">Home</a>
+          <a href="/about" className="text-light">About Us</a>
+          <a href="/contact" className="text-light">Contact</a>
+        </div>
+
+        <small>© {new Date().getFullYear()} MentorConnect. All rights reserved.</small>
+      </div>
+    </footer>
     </div>
+    </>
   );
 }
 

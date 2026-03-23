@@ -56,7 +56,7 @@ function App() {
                   <Link to="/" className="nav-link">Home</Link>
                 </li>
                 <li className="nav-item">
-                  <Link to="/addproducts" className="nav-link">Add Products</Link>
+                  <Link to="/addproducts" className="nav-link">Add Mentors</Link>
                 </li>
                 <li className="nav-item">
                   <Link to="/signup" className="nav-link">Signup</Link>

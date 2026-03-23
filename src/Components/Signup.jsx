@@ -61,6 +61,7 @@ const [error, setError] = useState("");
 
 
   return (
+    <>
     <div className='row justify-content-center mt-4'>
         <div className="card col-md-6 shadow p-4">
             <h1 className='text-primary'>Sign Up</h1>
@@ -108,7 +109,23 @@ const [error, setError] = useState("");
                 Already have an account? <Link to={"/signin"}>Signin</Link>
             </form>
         </div>
+        {/* ✅ FOOTER ADDED HERE */}
+    <footer className="bg-dark text-light mt-5 p-4 text-center">
+      <div className="container">
+        <h5>MentorConnect</h5>
+        <p>Empowering your growth through expert mentorship.</p>
+
+        <div className="d-flex justify-content-center gap-3 mb-3">
+          <a href="/" className="text-light">Home</a>
+          <a href="/about" className="text-light">About Us</a>
+          <a href="/contact" className="text-light">Contact</a>
+        </div>
+
+        <small>© {new Date().getFullYear()} MentorConnect. All rights reserved.</small>
+      </div>
+    </footer>
     </div>
+    </>
   )
 }
 

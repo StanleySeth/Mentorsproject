@@ -7,7 +7,8 @@ const Contact = () => {
     email: '',
     message: ''
   });
-    // declare the navigate hook
+    
+  // declare the navigate hook
     const navigate = useNavigate()
 
   const handleChange = (e) => {
