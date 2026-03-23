@@ -1,121 +1,151 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 import Loader from './Loader';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-
-
+import Mycarousel from './Mycarousel';
 
 const GetProducts = () => {
-  //Inialize hook to help you manage the state of the products in your application
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  //Declare the the navigate hook
+  // ✅ New states for search + filter
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filter, setFilter] = useState("all");
+
   const navigate = useNavigate();
+  const img_url = "https://sethstanley.alwaysdata.net/static/images/";
 
-  //Below we specify the image base url
-  const img_url="https://sethstanley.alwaysdata.net/static/images/"
-
-  //Create a function that will help you fetch the products from the API
   const fetchProducts = async () => {
     try {
-      //Update the loading hook to true so that the loader is displayed while the products are being fetched
       setLoading(true);
-      //Interact with your endpoint for fetching the products(Using axios)
       const response = await axios.get("https://sethstanley.alwaysdata.net/api/get_products");
-      //Update the products hook with the (fetched products) response given from the API.
       setProducts(response.data);
-      //Set the loading hook back to default(to deactivate the loader)
       setLoading(false);
-
-    }
-    catch (error) {
-      //If there's an error during the request, set the loading hook back to default(to deactivate the loader) and update the error hook with the error message
+    } catch (error) {
       setLoading(false);
-      //Update the error hook with the error message
       setError(error.message);
-
     }
-  }
+  };
 
-    //We shall use the useEffect hook to call the fetchProducts function when the component mounts so that the products are fetched and displayed immediately when the user visits the page
-    //This hook enables us to automatically re-render new features incase of any changes in the products data.
-    useEffect(() => {
-      fetchProducts();
-    }, []);
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
-    // console.log("The products are:", products);
+  // ✅ Filtering logic
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = product.product_name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+
+    // Assuming API returns a "category" field for each product
+    const matchesFilter =
+      filter === "all" ||
+      (product.product_name && product.product_name.toLowerCase() === filter.toLowerCase());
+
+    return matchesSearch && matchesFilter;
+  });
 
   return (
     <>
-    <div className='row'>
-      <h3 className="text-primary">Available Mentors 🌞🌟</h3>
-      {loading && <Loader />}
-      <h4 className="text-danger">{error}</h4>
+      <div className='row'>
+        <h3 className="text-primary">Available Mentors 🌞🌟</h3>
+        {loading && <Loader />}
+        <h4 className="text-danger">{error}</h4>
+        <Mycarousel products={products} img_url={img_url} />
 
-      {/* map the products fetched from the API to the user interface */}
-      {products.map((product, index) => (
-        <div className="col-md-3 d-flex mb-3">
-          <motion.div
-          key={product.id}
-          className="card shadow w-100 product-card"
-           initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.3 }}
-            whileHover={{
-              scale: 1.05,                          // zoom in slightly
-              y: -10,                               // lift upward
-              rotate: 2,                            // small tilt
-              backgroundColor: "#e6e6e6cc",           // subtle background change
-              boxShadow: "0px 8px 20px rgba(13, 6, 216, 0.25)", // glow/shadow
-              transition: { duration: 0.25, ease: "linear" }
-            }}
-            whileTap={{ scale: 0.95 }}              // shrink slightly when clicked
->
-    
-    <img 
-      src={img_url + product.product_photo} 
-      alt="productname" 
-      className="product_img mt-3 "
-    />
+        {/* ✅ Search + Filter UI */}
+        <div className="d-flex flex-column flex-md-row gap-3 mb-3">
+          <input
+            type="text"
+            placeholder="Search mentors..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="form-control"
+            style={{ maxWidth: "300px" }}
+          />
 
-    <div className="card-body d-flex flex-column">
-      <h5 className="text-primary">{product.product_name}</h5>
-
-      <p className="text-dark flex-grow-1">
-        {product.product_description.slice(0, 70)}...
-      </p>
-
-      <h4 className="text-warning">KES {product.product_cost}/Hour</h4>
-
-      <button className="btn btn-outline-info" onClick={() => navigate('/makepayment', { state: { product } })}>
-        Apply for the session
-      </button>
-    </div>
-
-  </motion.div>
-</div>
-      ))}
-    </div>
-    {/* ✅ FOOTER ADDED HERE */}
-    <footer className="bg-dark text-light mt-5 p-4 text-center">
-      <div className="container">
-        <h5>MentorConnect</h5>
-        <p>Empowering your growth through expert mentorship.</p>
-
-        <div className="d-flex justify-content-center gap-3 mb-3">
-          <a href="/" className="text-light">Home</a>
-          <a href="/about" className="text-light">About Us</a>
-          <a href="/contact" className="text-light">Contact</a>
+          <select
+            value={filter}
+            onChange={e => setFilter(e.target.value)}
+            className="form-select"
+            style={{ maxWidth: "200px" }}
+          >
+            <option value="all">All Categories</option>
+            <option value="tech Mentor">Tech</option>
+            <option value="Mental Mentor">Mental</option>
+            <option value="Peer Mentor">Peer</option>
+            <option value="Emotions">Emotions</option>
+            <option value="Startup Mentor">Startup</option>
+            <option value="Financial Mentor">Financial</option>
+            <option value="Career Mentor">Career </option>
+            <option value="Creative Mentor">Creative</option>
+            <option value="Fitness Mentor">Fitness</option>
+            <option value="Parenting Mentor">Parenting </option>
+            <option value="Legal Mentor">Legal</option>            
+            <option value="Communication Mentor">Communication</option>
+          </select>
         </div>
 
-        <small>© {new Date().getFullYear()} MentorConnect. All rights reserved.</small>
+        {/* ✅ Map filtered products */}
+        {filteredProducts.map((product, index) => (
+          <div className="col-md-3 d-flex mb-3" key={product.product_name}>
+            <motion.div
+              className="card shadow w-100 product-card"
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.3 }}
+              whileHover={{
+                scale: 1.05,
+                y: -10,
+                rotate: 2,
+                backgroundColor: "#e6e6e6cc",
+                boxShadow: "0px 8px 20px rgba(13, 6, 216, 0.25)",
+                transition: { duration: 0.25, ease: "linear" }
+              }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <img
+                src={img_url + product.product_photo}
+                alt={product.product_name}
+                className="product_img mt-3"
+              />
+              <div className="card-body d-flex flex-column">
+                <h5 className="text-primary">{product.product_name}</h5>
+                <p className="text-dark flex-grow-1">
+                  {product.product_description.slice(0, 70)}...
+                </p>
+                <h4 className="text-warning">KES {product.product_cost}/Hour</h4>
+                <button
+                  className="btn btn-outline-info"
+                  onClick={() =>
+                    navigate('/makepayment', { state: { product } })
+                  }
+                >
+                  Apply for the session
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        ))}
       </div>
-    </footer>
+
+      {/* ✅ Footer */}
+      <footer className="bg-dark text-light mt-5 p-4 text-center">
+        <div className="container">
+          <h5>MentorConnect</h5>
+          <p>Empowering your growth through expert mentorship.</p>
+          <div className="d-flex justify-content-center gap-3 mb-3">
+            <a href="/" className="text-light">Home</a>
+            <a href="/about" className="text-light">About Us</a>
+            <a href="/contact" className="text-light">Contact</a>
+          </div>
+          <small>© {new Date().getFullYear()} MentorConnect. All rights reserved.</small>
+        </div>
+      </footer>
     </>
-  )
-}
+  );
+};
 
 export default GetProducts;

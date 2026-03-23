@@ -120,7 +120,7 @@ const Makepayment = () => {
                 </form>
             </div>
         </div>
-        {/* ✅ FOOTER ADDED HERE */}
+    </div>
     <footer className="bg-dark text-light mt-5 p-4 text-center">
       <div className="container">
         <h5>MentorConnect</h5>
@@ -135,8 +135,6 @@ const Makepayment = () => {
         <small>© {new Date().getFullYear()} MentorConnect. All rights reserved.</small>
       </div>
     </footer>
-
-    </div>
     </>
   )
 }
