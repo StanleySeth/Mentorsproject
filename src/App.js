@@ -18,6 +18,7 @@ import NotFound from './Components/Notfound';
 import Makepayment from './Components/Makepayment';
 import About from './Components/About';
 import Contact from './Components/Contact';
+import Terms from './Components/Terms';
 
 
 function App() {
@@ -80,6 +81,7 @@ function App() {
         <Route path="*" element={<NotFound />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/terms" element={<Terms />} />
       </Routes>
     </div>
     </Router>

@@ -1,8 +1,23 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import Carousel from 'bootstrap/js/dist/carousel';
 
 const Mycarousel = () => {
+
+  // ✅ Initialize carousel manually
+  useEffect(() => {
+  const el = document.querySelector('#carouselExample');
+
+  if (el) {
+    new Carousel(el, {
+      interval: 5000,
+      ride: 'carousel',
+      pause: false,
+      wrap: true
+    });
+  }
+}, []);
+
   return (
     <div className="container mt-4">
       <div className="row">
@@ -11,8 +26,6 @@ const Mycarousel = () => {
           <div
             id="carouselExample"
             className="carousel slide"
-            data-bs-ride="carousel"
-            data-bs-interval="8000"
           >
 
             {/* Indicators */}
@@ -25,7 +38,7 @@ const Mycarousel = () => {
 
             <div className="carousel-inner">
 
-              {/* 🎬 VIDEO 1 (Professional Mentorship) */}
+              {/* 🎬 VIDEO 1 */}
               <div className="carousel-item active">
                 <video
                   className="d-block w-100"
@@ -33,12 +46,10 @@ const Mycarousel = () => {
                   autoPlay
                   muted
                   loop
+                  playsInline   // ✅ IMPORTANT
                   style={{ objectFit: "cover" }}
                 >
-                  <source
-                    src="https://cdn.coverr.co/videos/coverr-team-discussion-5176/1080p.mp4"
-                    type="video/mp4"
-                  />
+                  <source src="/Images/video2.mp4" type="video/mp4" />
                 </video>
 
                 <div className="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-3">
@@ -70,12 +81,10 @@ const Mycarousel = () => {
                   autoPlay
                   muted
                   loop
+                  playsInline   // ✅ IMPORTANT
                   style={{ objectFit: "cover" }}
                 >
-                  <source
-                    src="https://cdn.coverr.co/videos/coverr-business-meeting-5175/1080p.mp4"
-                    type="video/mp4"
-                  />
+                  <source src="/Images/video.mp4" type="video/mp4" />
                 </video>
 
                 <div className="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-3">
@@ -108,7 +117,7 @@ const Mycarousel = () => {
               data-bs-target="#carouselExample"
               data-bs-slide="prev"
             >
-              <span className="carousel-control-prev-icon"></span>
+              <span className="carousel-control-prev-icon bg-secondary"></span>
             </button>
 
             <button
@@ -117,7 +126,7 @@ const Mycarousel = () => {
               data-bs-target="#carouselExample"
               data-bs-slide="next"
             >
-              <span className="carousel-control-next-icon"></span>
+              <span className="carousel-control-next-icon bg-secondary"></span>
             </button>
 
           </div>

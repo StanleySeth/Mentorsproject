@@ -70,3 +70,8 @@
   object-fit: cover;
 }
 
+.video{
+  filter: brightness(70%);
+}
+
+
