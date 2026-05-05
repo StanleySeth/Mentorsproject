@@ -139,7 +139,7 @@ const GetProducts = () => {
           <div className="d-flex justify-content-center gap-3 mb-3">
             <a href="/" className="text-light">Home</a>
             <a href="/about" className="text-light">About Us</a>
-            <a href="/contact" className="text-light">Contact</a>
+            <a href="/contact" className="text-light">Contact Us</a>
           </div>
           <small>© {new Date().getFullYear()} MentorConnect. All rights reserved.</small>
         </div>
