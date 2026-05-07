@@ -6,9 +6,9 @@ const rules = [
   { keys: /find|search|look.*mentor|mentor.*find/i,
     reply: "🔍 To find the right mentor, visit our <a href='/mentors'>Browse Mentors</a> page and filter by skill, industry, or availability. Take time to read profiles carefully!" },
   { keys: /become.*mentor|mentor.*become|apply.*mentor/i,
-    reply: "🌟 Becoming a mentor is rewarding! Head to <a href='/signup'>Sign Up</a> and select 'Mentor' as your role. Share your expertise, set your schedule, and start inspiring others." },
+    reply: "🌟 Becoming a mentor is rewarding! I am afraid we don't have this right now. We are planning on making adjustments. Please keep in touch" },
   { keys: /session|book|schedul|appointment/i,
-    reply: "📅 Booking a session is easy! Visit a mentor's profile and click 'Book a Session'. You can choose your preferred date, time, and session type — video, chat, or call." },
+    reply: "📅 Booking a session is easy! Visit a mentor's profile and click 'Apply for a Session'. You can choose your preferred date, time, and session type — video, chat, or call." },
   { keys: /pay|payment|price|cost|fee|charge/i,
     reply: "💳 Session fees vary by mentor. Check the <a href='/makepayment'>Payments page</a> for details. We support secure card payments and mobile money options." },
   { keys: /career|job|profession|path|growth/i,
@@ -37,6 +37,14 @@ const rules = [
     reply: "💡 Pro tip: Come prepared to every session with specific questions. The more focused you are, the more value you'll get from your mentor's time!" },
   { keys: /network|connect|community/i,
     reply: "🤝 Mentorship is also about building your network. After sessions, stay in touch with your mentor — many lasting professional relationships start here!" },
+  { keys: /thanks|thank you|appreciate|thanks alot|bye/i,
+    reply: "😊You are very welcome!🙏🏿 I'm always here to help you grow. Keep up the amazing work!👍🏿" },
+  { keys: /idea|quote/i,
+    reply: "💡Don't optimize for being impressive early-optimize for being consistently useful." },
+  { keys: /racism|discrimination|equality|justice/i,
+    reply: "Education is the foundation of change. Visit https://www.raceforward.org or https://www.tolerance.org for free resources. For a global perspective on equity and human rights, explore https://www.amnesty.org/en/human-rights." },    
+  { keys: /no|never|I don't want it|Cannot/i,
+    reply: "Oooh! I am sorry😔. Do you mind asking else then maybe I can help in advance." }
 ];
 
 const SUGGESTIONS = [
@@ -45,10 +53,7 @@ const SUGGESTIONS = [
   "How do I book a session?",
   "What are the payment options?",
   "How can a mentor help my career?",
-  "How do I sign up?",
-  "I feel nervous reaching out",
   "What industries are available?",
-  "Give me a mentorship tip",
 ];
 
 const getReply = (text) => {

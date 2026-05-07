@@ -6,238 +6,353 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Mycarousel from './Mycarousel';
 import Chatbot from './Chatbot';
 import { useAuth } from '../context/AuthContext';
+import RandomMentorPicker from './Randommentorpicker';
+
+// ── Session type display config ──────────────────────────────
+const SESSION = {
+  physical: { icon: "🏢", label: "Physical",   bg: "#F3E8FF", color: "#7C3AED" },
+  online:   { icon: "📞", label: "Phone Call", bg: "#E0F2FE", color: "#0369A1" },
+  video:    { icon: "📹", label: "Video Call", bg: "#CCFBF1", color: "#0F766E" },
+  both:     { icon: "🌐", label: "Online",     bg: "#E0F2FE", color: "#0369A1" },
+  all:      { icon: "✨", label: "All Modes",  bg: "#FEF3C7", color: "#B45309" },
+};
 
 const GetProducts = () => {
-  const [products, setProducts]     = useState([]);
-  const [loading, setLoading]       = useState(false);
-  const [error, setError]           = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filter, setFilter]         = useState("all");
-  const [chatOpen, setChatOpen]     = useState(false);
+  const [products,        setProducts]        = useState([]);
+  const [categories,      setCategories]      = useState([]);   // from DB
+  const [loading,         setLoading]         = useState(false);
+  const [error,           setError]           = useState("");
+  const [searchTerm,      setSearchTerm]      = useState("");
+  const [filter,          setFilter]          = useState("all");
+  const [availFilter,     setAvailFilter]     = useState("all");
+  const [chatOpen,        setChatOpen]        = useState(false);
+  const [showPrompt,      setShowPrompt]      = useState(false);
+  const [pendingProduct,  setPendingProduct]  = useState(null);
 
-  // ✅ Prompt state — stores the product the user tried to open
-  const [showPrompt, setShowPrompt] = useState(false);
-  const [pendingProduct, setPendingProduct] = useState(null);
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const img_url  = "https://sethstanley.alwaysdata.net/static/images/";
 
-  const navigate  = useNavigate();
-  const { user }  = useAuth();
-  const img_url   = "https://sethstanley.alwaysdata.net/static/images/";
-
+  // ── Fetch mentors (backend now returns categories[] per mentor) ──
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("https://sethstanley.alwaysdata.net/api/get_products");
-      setProducts(response.data);
+      const res = await axios.get("https://sethstanley.alwaysdata.net/api/get_products");
+      setProducts(res.data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
       setLoading(false);
-    } catch (error) {
-      setLoading(false);
-      setError(error.message);
     }
   };
 
-  useEffect(() => { fetchProducts(); }, []);
+  // ── Fetch categories for the dropdown ─────────────────────────
+  // Uses /api/get_categories from our updated app.py
+  // If you haven't updated app.py yet, change this to /api/categories
+  const fetchCategories = async () => {
+    try {
+      const res = await axios.get("https://sethstanley.alwaysdata.net/api/get_categories");
+      setCategories(res.data);
+    } catch (err) {
+      console.error("Could not load categories:", err.message);
+    }
+  };
 
-  // ✅ Called when user clicks "Apply for the session"
+  useEffect(() => {
+    fetchProducts();
+    fetchCategories();
+  }, []);
+
+  // ── Apply button ───────────────────────────────────────────────
   const handleApply = (product) => {
+    if (product.is_available === 0 || product.is_available === false) return;
     if (user) {
-      // Already logged in → go straight to payment
       navigate('/makepayment', { state: { product } });
     } else {
-      // Not logged in → show prompt
       setPendingProduct(product);
       setShowPrompt(true);
     }
   };
 
-  // ✅ User chose to sign in → save destination and redirect
   const handleSignInRedirect = () => {
-    // Save the product in sessionStorage so we can restore it after login if needed
     sessionStorage.setItem("pendingProduct", JSON.stringify(pendingProduct));
     setShowPrompt(false);
     navigate("/signin");
   };
 
+  // ── Filtering ──────────────────────────────────────────────────
   const filteredProducts = products.filter(product => {
-    const matchesSearch = product.product_name
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
+    // Search by name
+    const matchesSearch =
+      product.product_name?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesFilter =
+    // Category: product.categories is an array returned by the backend JOIN
+    const matchesCategory =
       filter === "all" ||
-      (product.product_name && product.product_name.toLowerCase() === filter.toLowerCase());
+      (Array.isArray(product.categories) && product.categories.includes(filter));
 
-    return matchesSearch && matchesFilter;
+    // Availability
+    const matchesAvail =
+      availFilter === "all" ||
+      (availFilter === "available"   && (product.is_available === 1 || product.is_available === true)) ||
+      (availFilter === "unavailable" && (product.is_available === 0 || product.is_available === false));
+
+    return matchesSearch && matchesCategory && matchesAvail;
   });
 
   return (
     <>
-      <div className='row'>
+      <div className="row">
         <h3 className="text-primary">Available Mentors 🌞🌟</h3>
         {loading && <Loader />}
-        <h4 className="text-danger">{error}</h4>
+        {error && <h4 className="text-danger">{error}</h4>}
+
         <Mycarousel products={products} img_url={img_url} />
 
-        {/* Search + Filter */}
-        <div className="d-flex flex-column flex-md-row gap-3 mb-3">
+        {/* ── Random Mentor Picker ── */}
+        <RandomMentorPicker products={products} img_url={img_url} />
+
+        {/* ── Search + Filters ── */}
+        <div className="d-flex flex-wrap gap-3 mb-4 align-items-center">
+
+          {/* Search */}
           <input
             type="text"
-            placeholder="Search mentors..."
+            placeholder="🔍 Search mentors..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             className="form-control"
-            style={{ maxWidth: "300px" }}
+            style={{ maxWidth: "260px" }}
           />
+
+          {/* Category dropdown — from DB */}
           <select
             value={filter}
             onChange={e => setFilter(e.target.value)}
             className="form-select"
-            style={{ maxWidth: "200px" }}
+            style={{ maxWidth: "220px" }}
           >
             <option value="all">All Categories</option>
-            <option value="tech Mentor">Tech</option>
-            <option value="Mental Mentor">Mental</option>
-            <option value="Peer Mentor">Peer</option>
-            <option value="Emotions">Emotions</option>
-            <option value="Startup Mentor">Startup</option>
-            <option value="Financial Mentor">Financial</option>
-            <option value="Career Mentor">Career</option>
-            <option value="Creative Mentor">Creative</option>
-            <option value="Fitness Mentor">Fitness</option>
-            <option value="Parenting Mentor">Parenting</option>
-            <option value="Legal Mentor">Legal</option>
-            <option value="Communication Mentor">Communication</option>
+            {categories.map(cat => (
+              <option key={cat.category_id} value={cat.category_name}>
+                {cat.category_name}
+              </option>
+            ))}
           </select>
+
+          {/* Availability tabs */}
+          <div className="d-flex gap-1 flex-wrap">
+            {[
+              { val: "all",         label: "All"             },
+              { val: "available",   label: "🟢 Available"    },
+              { val: "unavailable", label: "🔴 Unavailable"  },
+            ].map(tab => (
+              <button
+                key={tab.val}
+                onClick={() => setAvailFilter(tab.val)}
+                style={{
+                  padding:     "6px 14px",
+                  borderRadius: "20px",
+                  border:      "1.5px solid",
+                  borderColor: availFilter === tab.val ? "#3B5BDB" : "#dee2e6",
+                  background:  availFilter === tab.val ? "#3B5BDB" : "#fff",
+                  color:       availFilter === tab.val ? "#fff"    : "#495057",
+                  fontSize:    "13px",
+                  cursor:      "pointer",
+                  fontWeight:  availFilter === tab.val ? "600"     : "400",
+                  transition:  "all 0.2s",
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Mentor cards */}
-        {filteredProducts.map((product, index) => (
-          <div className="col-md-3 d-flex mb-3" key={product.product_name}>
-            <motion.div
-              className="card shadow w-100 product-card"
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.3 }}
-              whileHover={{
-                scale: 1.05, y: -10, rotate: 2,
-                backgroundColor: "#e6e6e6cc",
-                boxShadow: "0px 8px 20px rgba(13, 6, 216, 0.25)",
-                transition: { duration: 0.25, ease: "linear" }
-              }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <img
-                src={img_url + product.product_photo}
-                alt={product.product_name}
-                className="product_img mt-3"
-              />
-              <div className="card-body d-flex flex-column">
-                <h5 className="text-primary">{product.product_name}</h5>
-                <p className="text-dark flex-grow-1">
-                  {product.product_description.slice(0, 70)}...
-                </p>
-                <h4 className="text-warning">KES {product.product_cost}/Hour</h4>
-                {/* ✅ Now calls handleApply instead of navigate directly */}
-                <button
-                  className="btn btn-outline-info"
-                  onClick={() => handleApply(product)}
-                >
-                  Apply for the session
-                </button>
-              </div>
-            </motion.div>
+        {/* ── Empty state ── */}
+        {filteredProducts.length === 0 && !loading && (
+          <div className="text-center text-muted py-5">
+            <p style={{ fontSize: "40px" }}>🔍</p>
+            <p>No mentors found. Try adjusting your filters.</p>
           </div>
-        ))}
+        )}
+
+        {/* ── Mentor cards ── */}
+        {filteredProducts.map((product, index) => {
+          const isAvailable = product.is_available === 1 || product.is_available === true;
+          const sessionInfo = SESSION[product.session_type] || SESSION.both;
+          const hours       = product.available_from && product.available_to
+            ? `${product.available_from} – ${product.available_to}`
+            : null;
+
+          return (
+            <div
+              className="col-md-3 d-flex mb-3"
+              key={product.id || product.product_id || product.product_name}
+            >
+              <motion.div
+                className="card shadow w-100 product-card"
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{
+                  scale:     isAvailable ? 1.05 : 1.01,
+                  y:         isAvailable ? -10  : 0,
+                  rotate:    isAvailable ? 2    : 0,
+                  boxShadow: isAvailable
+                    ? "0px 8px 20px rgba(13,6,216,0.25)"
+                    : "0px 2px 8px rgba(0,0,0,0.1)",
+                  transition: { duration: 0.25 },
+                }}
+                whileTap={{ scale: 0.97 }}
+                style={{ opacity: isAvailable ? 1 : 0.72, position: "relative" }}
+              >
+                {/* ── Availability badge ── */}
+                <div style={{
+                  position:   "absolute", top: "10px", right: "10px",
+                  background: isAvailable ? "#22C55E" : "#EF4444",
+                  color:      "#fff", borderRadius: "20px",
+                  padding:    "3px 10px", fontSize: "11px",
+                  fontWeight: "700", zIndex: 2,
+                  boxShadow:  "0 2px 6px rgba(0,0,0,0.15)",
+                }}>
+                  {isAvailable ? "🟢 Available" : "🔴 Unavailable"}
+                </div>
+
+                <img
+                  src={img_url + product.product_photo}
+                  alt={product.product_name}
+                  className="product_img mt-3"
+                  style={{ filter: isAvailable ? "none" : "grayscale(60%)" }}
+                />
+
+                <div className="card-body d-flex flex-column">
+                  <h5 className="text-primary">{product.product_name}</h5>
+                  <p className="text-dark flex-grow-1">
+                    {product.product_description?.slice(0, 70)}...
+                  </p>
+                  <h4 className="text-warning">KES {product.product_cost}/Hour</h4>
+
+                  {/* ── Category pills (from DB join) ── */}
+                  {Array.isArray(product.categories) && product.categories.length > 0 && (
+                    <div style={{ display:"flex", flexWrap:"wrap", gap:"4px", marginBottom:"8px" }}>
+                      {product.categories.map(cat => (
+                        <span key={cat} style={{
+                          background: "#EEF2FF", color: "#3B5BDB",
+                          borderRadius: "20px", padding: "2px 8px",
+                          fontSize: "11px", fontWeight: "600",
+                        }}>
+                          {cat}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* ── Session type badge ── */}
+                  <div style={{ marginBottom: "8px" }}>
+                    <span style={{
+                      background:   sessionInfo.bg,
+                      color:        sessionInfo.color,
+                      borderRadius: "20px",
+                      padding:      "3px 10px",
+                      fontSize:     "12px",
+                      fontWeight:   "600",
+                    }}>
+                      {sessionInfo.icon} {sessionInfo.label}
+                    </span>
+                  </div>
+
+                  {/* ── Available hours ── */}
+                  {isAvailable && hours && (
+                    <p style={{ fontSize:"11px", color:"#6B7280", marginBottom:"8px" }}>
+                      ⏰ Available: {hours}
+                    </p>
+                  )}
+
+                  {/* ── Apply / Unavailable button ── */}
+                  <button
+                    className={`btn ${isAvailable ? "btn-outline-info" : "btn-secondary"}`}
+                    onClick={() => handleApply(product)}
+                    disabled={!isAvailable}
+                    title={!isAvailable ? "This mentor is currently unavailable" : ""}
+                    style={{ cursor: isAvailable ? "pointer" : "not-allowed" }}
+                  >
+                    {isAvailable ? "Apply for the session" : "Currently Unavailable"}
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          );
+        })}
       </div>
 
-      {/* ✅ Sign-in Prompt Modal */}
+      {/* ── Sign-in Prompt Modal ── */}
       <AnimatePresence>
         {showPrompt && (
           <>
-            {/* Backdrop */}
             <motion.div
               key="backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setShowPrompt(false)}
               style={{
                 position: "fixed", inset: 0,
                 background: "rgba(0,0,0,0.55)",
-                zIndex: 1055,
-                backdropFilter: "blur(3px)",
+                zIndex: 1055, backdropFilter: "blur(3px)",
               }}
             />
-
-            {/* Modal */}
             <motion.div
               key="modal"
-              initial={{ opacity: 0, scale: 0.85, y: 40 }}
-              animate={{ opacity: 1, scale: 1,   y: 0  }}
-              exit={{   opacity: 0, scale: 0.85, y: 40  }}
-              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              initial={{ opacity:0, scale:0.85, y:40 }}
+              animate={{ opacity:1, scale:1,    y:0  }}
+              exit={{   opacity:0, scale:0.85, y:40  }}
+              transition={{ type:"spring", stiffness:300, damping:25 }}
               style={{
-                position: "fixed",
-                top: "50%", left: "50%",
-                transform: "translate(-50%, -50%)",
-                zIndex: 1060,
-                background: "#fff",
-                borderRadius: "16px",
-                padding: "32px 28px",
-                maxWidth: "400px",
-                width: "90%",
+                position: "fixed", top: "50%", left: "50%",
+                transform: "translate(-50%,-50%)",
+                zIndex: 1060, background: "#fff",
+                borderRadius: "16px", padding: "32px 28px",
+                maxWidth: "400px", width: "90%",
                 textAlign: "center",
                 boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
               }}
             >
-              {/* Icon */}
               <div style={{
-                width: "64px", height: "64px", borderRadius: "50%",
-                background: "#EEF2FF", margin: "0 auto 16px",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: "28px",
-              }}>
-                🔐
-              </div>
+                width:"64px", height:"64px", borderRadius:"50%",
+                background:"#EEF2FF", margin:"0 auto 16px",
+                display:"flex", alignItems:"center", justifyContent:"center",
+                fontSize:"28px",
+              }}>🔐</div>
 
-              <h5 style={{ fontWeight: "700", marginBottom: "8px" }}>
-                Sign in to continue
-              </h5>
+              <h5 style={{ fontWeight:"700", marginBottom:"8px" }}>Sign in to continue</h5>
 
               {pendingProduct && (
-                <p style={{ fontSize: "13px", color: "#6B7280", marginBottom: "20px" }}>
+                <p style={{ fontSize:"13px", color:"#6B7280", marginBottom:"20px" }}>
                   You need to be logged in to apply for a session with{" "}
                   <strong>{pendingProduct.product_name}</strong>.
                 </p>
               )}
 
-              {/* Buttons */}
               <button
                 className="btn btn-primary w-100 mb-2"
                 onClick={handleSignInRedirect}
-              >
-                🔑 Sign In
-              </button>
+              >🔑 Sign In</button>
 
               <button
                 className="btn btn-outline-secondary w-100 mb-2"
                 onClick={() => { setShowPrompt(false); navigate("/signup"); }}
-              >
-                ✍️ Create an Account
-              </button>
+              >✍️ Create an Account</button>
 
               <button
                 className="btn btn-link text-muted w-100"
-                style={{ fontSize: "13px" }}
+                style={{ fontSize:"13px" }}
                 onClick={() => setShowPrompt(false)}
-              >
-                Cancel
-              </button>
+              >Cancel</button>
             </motion.div>
           </>
         )}
       </AnimatePresence>
 
-      {/* Footer */}
+      {/* ── Footer ── */}
       <footer className="bg-dark text-light mt-5 p-4 text-center">
         <div className="container">
           <h5>MentorConnect</h5>
@@ -251,11 +366,11 @@ const GetProducts = () => {
         </div>
       </footer>
 
-      {/* Floating Chat Button */}
+      {/* ── Floating Chat Button ── */}
       <button
         onClick={() => setChatOpen(true)}
         style={{
-          position: "fixed", bottom: "20px", left: "20px",
+          position:  "fixed", bottom: "20px", left: "20px",
           background: "#3B5BDB", color: "#fff",
           border: "none", borderRadius: "50px",
           padding: "12px 18px", fontSize: "14px",
@@ -266,7 +381,6 @@ const GetProducts = () => {
       >
         💬 Chat Assistant
       </button>
-
       <Chatbot open={chatOpen} onClose={() => setChatOpen(false)} />
     </>
   );

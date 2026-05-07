@@ -9,6 +9,11 @@ function Addproducts() {
   const [product_description, setProductDescription] = useState("");
   const [product_cost, setProductCost] = useState("");
   const [product_photo, setProductPhoto] = useState("");
+  // Temporarily commented out new state variables
+  // const [categories, setCategories] = useState([]);
+  // const [session_type, setSessionType] = useState("both");
+  // const [available_from, setAvailableFrom] = useState("09:00");
+  // const [available_to, setAvailableTo] = useState("17:00");
   const fileInputRef = useRef(null); // Ref for the file input element
 
 
@@ -35,6 +40,28 @@ function Addproducts() {
       formData.append("product_cost", product_cost);
       formData.append("product_photo", product_photo);
 
+      // === NEW FIELDS ===
+      formData.append("is_available", "1");                    // "1" = true
+      formData.append("availability_mode", "both");            // options: physical, online, video, both (temporarily hardcoded)
+      formData.append("timezone", "Africa/Nairobi");
+      // Temporarily commented out new fields to debug 400 error
+      // formData.append("categories", JSON.stringify(categories));
+      // formData.append("available_from", available_from);
+      // formData.append("available_to", available_to);
+
+      // Send availability_schedule as a JSON string (very important) throughout the week
+      const schedule = {
+        monday:    [{start: "09:00", end: "17:00", mode: "both"}],
+        tuesday:   [{start: "09:00", end: "17:00", mode: "both"}],
+        wednesday: [{start: "09:00", end: "17:00", mode: "both"}],
+        thursday:  [{start: "09:00", end: "17:00", mode: "both"}],
+        friday:    [{start: "09:00", end: "17:00", mode: "both"}],
+        saturday:  [{start: "10:00", end: "14:00", mode: "online"}],
+        sunday:    []
+      };
+
+      formData.append("availability_schedule", JSON.stringify(schedule));
+
       //Interact with axios to help you get a response from the API
       const response = await axios.post("https://sethstanley.alwaysdata.net/api/add_product", formData);
       //Set the loading hook back to default (deactivate it)
@@ -48,6 +75,11 @@ function Addproducts() {
       setProductDescription("");
       setProductCost("");
       setProductPhoto("");
+      // Temporarily commented out clearing new fields
+      // setCategories([]);
+      // setSessionType("both");
+      // setAvailableFrom("09:00");
+      // setAvailableTo("17:00");
 
       //Clear the success message after 5 seconds
       setTimeout(() => {
@@ -93,10 +125,10 @@ function Addproducts() {
         <form onSubmit={handleSubmit} className="p-3 shadow rounded custom-card" >
           {/* Product Name */}
           <div className="mb-3">
-            <label className="form-label">Concern</label>
+            <label className="form-label">Mentor</label>
             <input
               type="text"
-              placeholder="Enter your concern here..."
+              placeholder="Enter the type of mentor here..."
               className="form-control"
               required
               value={product_name}
@@ -140,6 +172,62 @@ function Addproducts() {
               ref={fileInputRef}
               onChange={(e) => setProductPhoto(e.target.files[0])} />
           </div>
+
+          {/* Temporarily commented out new fields to debug 400 error */}
+          {/*
+          <div className="mb-3">
+            <label className="form-label">Categories (Select multiple - Hold Ctrl/Cmd)</label>
+            <select
+              multiple
+              className="form-control"
+              value={categories}
+              onChange={(e) => setCategories([...e.target.selectedOptions].map(o => o.value))}
+            >
+              <option value="Web Development">Web Development</option>
+              <option value="Mobile Development">Mobile Development</option>
+              <option value="Data Science">Data Science</option>
+              <option value="Business">Business</option>
+              <option value="Design">Design</option>
+              <option value="AI/ML">AI/ML</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label">Session Type</label>
+            <select
+              className="form-control"
+              value={session_type}
+              onChange={(e) => setSessionType(e.target.value)}
+            >
+              <option value="physical">Physical</option>
+              <option value="online">Online</option>
+              <option value="video">Video Call</option>
+              <option value="both">Both</option>
+            </select>
+          </div>
+
+          <div className="row">
+            <div className="col-md-6 mb-3">
+              <label className="form-label">Available From</label>
+              <input
+                type="time"
+                className="form-control"
+                value={available_from}
+                onChange={(e) => setAvailableFrom(e.target.value)}
+              />
+            </div>
+            <div className="col-md-6 mb-3">
+              <label className="form-label">Available To</label>
+              <input
+                type="time"
+                className="form-control"
+                value={available_to}
+                onChange={(e) => setAvailableTo(e.target.value)}
+              />
+            </div>
+          </div>
+          */}
 
           {/* Submit */}
           <button type="submit" className="btn btn-primary w-100">

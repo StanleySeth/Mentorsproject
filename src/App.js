@@ -19,9 +19,10 @@ import Makepayment from './Components/Makepayment';
 import About from './Components/About';
 import Contact from './Components/Contact';
 import Terms from './Components/Terms';
+import RandomMentorPicker from './Components/Randommentorpicker';
 
 function AppContent() {
-  const { user, logoutUser, isAdmin, logout } = useAuth();
+  const { user, logoutUser, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   const AddproductsGuard = () => {
@@ -59,6 +60,11 @@ function AppContent() {
             <span className="navbar-toggler-icon"></span>
           </button>
 
+          <div className="nav-item">
+            <RandomMentorPicker />
+          </div>
+
+
           <div className="collapse navbar-collapse" id="navbarNav">
             <ul className="navbar-nav ms-auto align-items-center">
 
@@ -74,11 +80,10 @@ function AppContent() {
                   </li>
 
                   <li className="nav-item dropdown">
-                    <a
-                      className="nav-link dropdown-toggle d-flex align-items-center gap-2"
-                      href="#"
+                    <button
+                      type="button"
+                      className="nav-link dropdown-toggle d-flex align-items-center gap-2 btn btn-link"
                       id="adminDropdown"
-                      role="button"
                       data-bs-toggle="dropdown"
                       aria-expanded="false"
                     >
@@ -93,7 +98,7 @@ function AppContent() {
                       <span className="d-none d-lg-inline" style={{ fontSize: "14px" }}>
                         Admin
                       </span>
-                    </a>
+                    </button>
 
                     <ul
                       className="dropdown-menu dropdown-menu-end"

@@ -34,22 +34,48 @@ export const AuthProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : null;
   });
 
-  // Called after successful signin
+  // Login user (after successful signin)
   const loginUser = (userData) => {
     setUser(userData);
     localStorage.setItem("user", JSON.stringify(userData));
     localStorage.setItem("isLoggedIn", "true");
   };
 
-  // Called when user clicks logout
+  // Logout user
   const logoutUser = () => {
     setUser(null);
     localStorage.removeItem("user");
     localStorage.removeItem("isLoggedIn");
   };
 
+  // ── New: Update User Profile ─────────────────────────────
+  const updateUser = (updatedData) => {
+    if (!user) return false;
+
+    const newUserData = { ...user, ...updatedData };
+
+    setUser(newUserData);
+    localStorage.setItem("user", JSON.stringify(newUserData));
+
+    // TODO: Later you can call your backend API here
+    // Example:
+    // await axios.put('/api/user/profile', updatedData);
+
+    return true;
+  };
+
   return (
-    <AuthContext.Provider value={{ isAdmin, login, logout, user, loginUser, logoutUser }}>
+    <AuthContext.Provider 
+      value={{ 
+        isAdmin, 
+        login, 
+        logout, 
+        user, 
+        loginUser, 
+        logoutUser,
+        updateUser   // ← Added
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
