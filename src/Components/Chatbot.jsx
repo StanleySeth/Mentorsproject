@@ -31,7 +31,7 @@ const rules = [
     reply: "💪 It's normal to feel nervous reaching out. Remember — every mentor was once a mentee. Take that first step, you've got this! 🙌" },
   { keys: /time|busy|schedule|availability/i,
     reply: "⏰ Mentors set their own availability. Use the filter on the <a href='/mentors'>Mentors page</a> to find someone who matches your free hours." },
-  { keys: /industry|sector|field|niche/i,
+  { keys: /industry|sector|field|niche|industries/i,
     reply: "🏭 We have mentors across tech, finance, healthcare, design, education, and more! Browse by industry on the <a href='/mentors'>Mentors page</a>." },
   { keys: /tip|advice|recommend|suggest/i,
     reply: "💡 Pro tip: Come prepared to every session with specific questions. The more focused you are, the more value you'll get from your mentor's time!" },
